@@ -577,6 +577,7 @@ class FrozenOpenCLIPImageEmbedder(AbstractEmbModel):
         arch="ViT-H-14",
         version="laion2b_s32b_b79k",
         device="cuda",
+        precision="fp16",
         init_device="cpu",
         max_length=77,
         freeze=True,
@@ -596,6 +597,7 @@ class FrozenOpenCLIPImageEmbedder(AbstractEmbModel):
             device=torch.device(init_device),
             pretrained=version,
             cache_dir=cache_dir,
+            precision=precision
         )
         del model.transformer
         self.model = model
