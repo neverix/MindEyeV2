@@ -14,6 +14,7 @@ from ..modules.diffusionmodules.wrappers import OPENAIUNETWRAPPER
 from ..modules.ema import LitEma
 from ..util import (default, disabled_train, get_obj_from_str,
                     instantiate_from_config, log_txt_as_img)
+from accelerate import init_empty_weights
 
 
 class DiffusionEngine(pl.LightningModule):
@@ -45,17 +46,18 @@ class DiffusionEngine(pl.LightningModule):
         self.optimizer_config = default(
             optimizer_config, {"target": "torch.optim.AdamW"}
         )
-        model = instantiate_from_config(network_config)
-        self.model = get_obj_from_str(default(network_wrapper, OPENAIUNETWRAPPER))(
-            model, compile_model=compile_model
-        )
-
-        self.denoiser = instantiate_from_config(denoiser_config)
-        self.sampler = (
-            instantiate_from_config(sampler_config)
-            if sampler_config is not None
-            else None
-        )
+        with init_empty_weights():
+            model = instantiate_from_config(network_config)
+            self.model = get_obj_from_str(default(network_wrapper, OPENAIUNETWRAPPER))(
+                model, compile_model=compile_model
+            )
+    
+            self.denoiser = instantiate_from_config(denoiser_config)
+            self.sampler = (
+                instantiate_from_config(sampler_config)
+                if sampler_config is not None
+                else None
+            )
         self.conditioner = instantiate_from_config(
             default(conditioner_config, UNCONDITIONAL_CONFIG)
         )
